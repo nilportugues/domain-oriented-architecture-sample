@@ -10,6 +10,5 @@ case class HttpToJMSAdapter(camelContext: CamelContext) extends ScalaRouteBuilde
     val camelUrl = exchange.getIn().getHeader("Host").toString
     val host = new URL("http://" + camelUrl).getHost
     exchange.getIn().setHeader("JMSTarget", host)
-    exchange
   }.setExchangePattern(ExchangePattern.InOut).recipients(simple("activemq:${header.JMSTarget}"))
 }
