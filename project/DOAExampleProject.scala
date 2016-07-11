@@ -1,3 +1,5 @@
+import java.io.{File, PrintWriter}
+
 import sbt.Keys._
 import sbt._
 import sbtdocker.DockerPlugin
@@ -5,28 +7,66 @@ import sbtdocker.DockerPlugin.autoImport._
 
 object DOAExampleProject extends Build {
   lazy val DefaultConfiguration = Seq(
-    scalaVersion := "2.11.8",
+    scalaVersion := "2.11.8"
+  )
+
+  lazy val DockerizedConfiguration = Seq(
     dockerfile in docker := {
       val jarFile: File = sbt.Keys.`package`.in(Compile, packageBin).value
+      val outputServiceJar: File = sbt.Keys.`package`.in(Compile, packageBin).in(outputService).value
+      val inputServiceJar: File = sbt.Keys.`package`.in(Compile, packageBin).in(inputService).value
+
       val classpath = (managedClasspath in Compile).value
+      val outputClasspath = (managedClasspath in Compile in outputService).value
+      val inputClasspath = (managedClasspath in Compile in inputService).value
+
       val mainclass = mainClass.in(Compile, packageBin).value.getOrElse(sys.error("Expected exactly one main class"))
+      val outputMainclass = mainClass.in(Compile, packageBin).in(outputService).value.getOrElse(sys.error("Expected exactly one main class"))
+      val inputMainclass = mainClass.in(Compile, packageBin).in(inputService).value.getOrElse(sys.error("Expected exactly one main class"))
+
       val jarTarget = s"/app/${jarFile.getName}"
+      val outputJarTarget = s"/app/${outputServiceJar.getName}"
+      val inputJarTarget = s"/app/${inputServiceJar.getName}"
       // Make a colon separated classpath with the JAR file
       val classpathString = classpath.files.map("/app/" + _.getName)
         .mkString(":") + ":" + jarTarget
+
+      val outputClasspathString = outputClasspath.files.map("/app/" + _.getName)
+        .mkString(":") + ":" + outputJarTarget
+
+      val inputClasspathString = inputClasspath.files.map("/app/" + _.getName)
+        .mkString(":") + ":" + inputJarTarget
+
+      val startAllFile = File.createTempFile("_startAll", ".sh")
+      new PrintWriter(startAllFile) {
+        write(
+          s"""
+            |#!/bin/sh
+            |java -cp $outputClasspathString $outputMainclass &
+            |java -cp $inputClasspathString $inputMainclass &
+            |java -cp $classpathString $mainclass
+          """.stripMargin.trim)
+        close()
+      }
+
       new Dockerfile {
         // Base image
         from("java")
         // Add all files on the classpath
         add(classpath.files, "/app/")
+        add(outputClasspath.files, "/app/")
+        add(inputClasspath.files, "/app/")
+        add(startAllFile, "/bin/start-all.sh")
         // Add the JAR file
         add(jarFile, jarTarget)
+        add(outputServiceJar, outputJarTarget)
+        add(inputServiceJar, inputJarTarget)
         // On launch run Java with the classpath and the main class
-        entryPoint("java", "-cp", classpathString, mainclass)
+        run("chmod", "+x", "/bin/start-all.sh")
+        cmd("./bin/start-all.sh")
       }
     }
-
-  )
+  ) ++ DefaultConfiguration
 
   object Dependencies {
     lazy val SpringBoot = Seq(
@@ -62,7 +102,7 @@ object DOAExampleProject extends Build {
     libraryDependencies ++= Camel ++ Logging ++ Parsing
   )
 
-  lazy val ServiceConfiguration = DefaultConfiguration ++ Seq(
+  lazy val ServiceConfiguration = DockerizedConfiguration ++ Seq(
     libraryDependencies ++= SpringBoot ++ Logging
   )
 
