@@ -56,11 +56,11 @@ object DOAExampleProject extends Build {
         add(classpath.files, "/app/")
         add(outputClasspath.files, "/app/")
         add(inputClasspath.files, "/app/")
-        add(startAllFile, "/bin/start-all.sh")
         // Add the JAR file
         add(jarFile, jarTarget)
         add(outputServiceJar, outputJarTarget)
         add(inputServiceJar, inputJarTarget)
+        add(startAllFile, "/bin/start-all.sh")
         // On launch run Java with the classpath and the main class
         run("chmod", "+x", "/bin/start-all.sh")
         cmd("./bin/start-all.sh")
