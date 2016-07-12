@@ -1,6 +1,6 @@
 package com.github.kmruiz.doa.cmsApplication.domain.client
 
-class ClientService(repository: ClientRepository) {
+case class ClientService(repository: ClientRepository) {
   def registerClient(registerer: ClientRegisterer, username: String): Client = {
     repository.save(registerer.registerClient(username))
   }

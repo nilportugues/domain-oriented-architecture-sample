@@ -4,7 +4,7 @@ import com.github.kmruiz.doa.cmsApplication.domain.client.{Client, ClientReposit
 
 class AwesomeClientRepository(private var clientMap: Map[String, Client] = Map()) extends ClientRepository {
   override def save(client: Client): Client = client match {
-    case WebApplicationClient(id) =>
+    case WebApplicationClient(id, _) =>
       clientMap = clientMap + (id -> client)
       client
     case _ => client

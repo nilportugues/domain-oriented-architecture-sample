@@ -41,10 +41,10 @@ object DOAExampleProject extends Build {
       new PrintWriter(startAllFile) {
         write(
           s"""
-            |#!/bin/sh
-            |java -cp $outputClasspathString $outputMainclass &
-            |java -cp $inputClasspathString $inputMainclass &
-            |java -cp $classpathString $mainclass
+             |#!/bin/sh
+             |java -cp $outputClasspathString $outputMainclass &
+             |java -cp $inputClasspathString $inputMainclass &
+             |java -cp $classpathString $mainclass
           """.stripMargin.trim)
         close()
       }
@@ -72,7 +72,8 @@ object DOAExampleProject extends Build {
     lazy val SpringBoot = Seq(
       "org.springframework.boot" % "spring-boot-starter" % "1.3.6.RELEASE",
       "org.springframework.boot" % "spring-boot-starter-web" % "1.3.6.RELEASE",
-      "org.springframework.boot" % "spring-boot-starter-tomcat" % "1.3.6.RELEASE" % "provided"
+      "org.springframework.boot" % "spring-boot-starter-tomcat" % "1.3.6.RELEASE" % "provided",
+      "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.7.4"
     )
 
     lazy val Camel = Seq(
@@ -85,7 +86,7 @@ object DOAExampleProject extends Build {
     )
 
     lazy val HttpComponents = Seq(
-      "org.apache.httpcomponents" % "httpclient" % "4.5.2" exclude("commons-logging","commons-logging")
+      "org.apache.httpcomponents" % "httpclient" % "4.5.2" exclude("commons-logging", "commons-logging")
     )
 
     lazy val Logging = Seq(
