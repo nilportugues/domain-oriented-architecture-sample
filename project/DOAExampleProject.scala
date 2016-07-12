@@ -69,12 +69,16 @@ object DOAExampleProject extends Build {
   ) ++ DefaultConfiguration
 
   object Dependencies {
+    lazy val Protocol = Seq(
+    "com.fasterxml.jackson.core" % "jackson-core" % "2.8.0",
+    "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.7.4"
+    )
+
     lazy val SpringBoot = Seq(
       "org.springframework.boot" % "spring-boot-starter" % "1.3.6.RELEASE",
       "org.springframework.boot" % "spring-boot-starter-web" % "1.3.6.RELEASE",
-      "org.springframework.boot" % "spring-boot-starter-tomcat" % "1.3.6.RELEASE" % "provided",
-      "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.7.4"
-    )
+      "org.springframework.boot" % "spring-boot-starter-tomcat" % "1.3.6.RELEASE" % "provided"
+    ) ++ Protocol
 
     lazy val Camel = Seq(
       "org.apache.camel" % "camel-scala" % "2.17.2",
@@ -108,7 +112,7 @@ object DOAExampleProject extends Build {
   )
 
   lazy val ALConfiguration = DefaultConfiguration ++ Seq(
-    libraryDependencies ++= HttpComponents ++ Logging
+    libraryDependencies ++= HttpComponents ++ Logging ++ Protocol
   )
 
   lazy val cmsAL = project.settings(ALConfiguration)

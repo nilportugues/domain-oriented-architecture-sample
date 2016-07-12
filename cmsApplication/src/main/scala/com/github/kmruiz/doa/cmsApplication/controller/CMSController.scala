@@ -1,14 +1,11 @@
 package com.github.kmruiz.doa.cmsApplication.controller
 
+import com.github.kmruiz.doa.cmsApplication.al.{CommentClientRequest, CreateClientRequest, LoginRequest}
 import com.github.kmruiz.doa.cmsApplication.application.ContentManagementSystem
 import com.github.kmruiz.doa.cmsApplication.domain.card.Card
 import com.github.kmruiz.doa.cmsApplication.domain.client.Client
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation._
-
-case class LoginRequest(username: String, password: String)
-case class CreateClientRequest(origin: String, client: String)
-case class CommentClientRequest(token: String, client: String, comment: String)
 
 @Controller
 @RequestMapping(value = Array("/cms/"))
