@@ -15,8 +15,10 @@ object DOAExampleProject extends Build {
       val jarFile: File = sbt.Keys.`package`.in(Compile, packageBin).value
       val outputServiceJar: File = sbt.Keys.`package`.in(Compile, packageBin).in(outputService).value
       val inputServiceJar: File = sbt.Keys.`package`.in(Compile, packageBin).in(inputService).value
+      val cmsALJar: File = sbt.Keys.`package`.in(Compile, packageBin).in(cmsAL).value
 
       val classpath = (managedClasspath in Compile).value
+      val cmsALClasspath = (managedClasspath in Compile in cmsAL).value
       val outputClasspath = (managedClasspath in Compile in outputService).value
       val inputClasspath = (managedClasspath in Compile in inputService).value
 
@@ -25,10 +27,11 @@ object DOAExampleProject extends Build {
       val inputMainclass = mainClass.in(Compile, packageBin).in(inputService).value.getOrElse(sys.error("Expected exactly one main class"))
 
       val jarTarget = s"/app/${jarFile.getName}"
+      val cmsALTarget = s"/app/${cmsALJar.getName}"
       val outputJarTarget = s"/app/${outputServiceJar.getName}"
       val inputJarTarget = s"/app/${inputServiceJar.getName}"
       // Make a colon separated classpath with the JAR file
-      val classpathString = classpath.files.map("/app/" + _.getName)
+      val classpathString = (classpath.files ++ cmsALClasspath.files ++ Seq(cmsALJar)).map("/app/" + _.getName)
         .mkString(":") + ":" + jarTarget
 
       val outputClasspathString = outputClasspath.files.map("/app/" + _.getName)
@@ -60,6 +63,7 @@ object DOAExampleProject extends Build {
         add(jarFile, jarTarget)
         add(outputServiceJar, outputJarTarget)
         add(inputServiceJar, inputJarTarget)
+        add(cmsALJar, cmsALTarget)
         add(startAllFile, "/bin/start-all.sh")
         // On launch run Java with the classpath and the main class
         run("chmod", "+x", "/bin/start-all.sh")
@@ -70,8 +74,8 @@ object DOAExampleProject extends Build {
 
   object Dependencies {
     lazy val Protocol = Seq(
-    "com.fasterxml.jackson.core" % "jackson-core" % "2.8.0",
-    "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.7.4"
+      "com.fasterxml.jackson.core" % "jackson-core" % "2.8.0",
+      "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.7.4"
     )
 
     lazy val SpringBoot = Seq(
@@ -93,7 +97,8 @@ object DOAExampleProject extends Build {
       "org.apache.httpcomponents" % "httpclient" % "4.5.2" exclude("commons-logging", "commons-logging")
     )
 
-    lazy val Logging = Seq(
+    lazy val CamelLogging = Seq(
+      "org.slf4j" % "slf4j-simple" % "1.7.21"
     )
 
     lazy val Parsing = Seq(
@@ -104,15 +109,15 @@ object DOAExampleProject extends Build {
   import Dependencies._
 
   lazy val CamelConfiguration = DefaultConfiguration ++ Seq(
-    libraryDependencies ++= Camel ++ Logging ++ Parsing
+    libraryDependencies ++= Camel ++ CamelLogging ++ Parsing
   )
 
   lazy val ServiceConfiguration = DockerizedConfiguration ++ Seq(
-    libraryDependencies ++= SpringBoot ++ Logging
+    libraryDependencies ++= SpringBoot
   )
 
   lazy val ALConfiguration = DefaultConfiguration ++ Seq(
-    libraryDependencies ++= HttpComponents ++ Logging ++ Protocol
+    libraryDependencies ++= HttpComponents ++ Protocol
   )
 
   lazy val cmsAL = project.settings(ALConfiguration)

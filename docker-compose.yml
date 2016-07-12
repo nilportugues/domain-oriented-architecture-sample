@@ -11,14 +11,22 @@ activemq:
 
 cms:
   image: cmsapplication/cmsapplication
+  environment:
+    - INPUT_SOURCES=cms.service
   extra_hosts:
-    - "output.service:127.0.0.1"
+    - "web.service:127.0.0.1"
+  links:
+    - "activemq:queue.service"
   ports:
     - 8080:8080
 
 web:
   image: webapplication/webapplication
+  environment:
+    - INPUT_SOURCES=web.service
   extra_hosts:
-    - "output.service:127.0.0.1"
+    - "cms.service:127.0.0.1"
+  links:
+      - "activemq:queue.service"
   ports:
     - 8081:8080
